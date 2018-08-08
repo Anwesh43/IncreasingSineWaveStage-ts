@@ -19,6 +19,7 @@ class IncreasingSineWaveStage {
     render() {
         this.context.fillStyle = '#212121'
         this.context.fillRect(0, 0, w, h)
+        this.linkedISW.draw(this.context)
     }
 
     handleTap() {
@@ -104,7 +105,7 @@ class ISWNode {
         context.lineCap = 'round'
         context.lineWidth = Math.min(w, h) / 60
         context.save()
-        context.translate(0, h/2)
+        context.translate(gap * this.i, h/2)
         var j = 0
         context.beginPath()
         for (var i = 360 * this.state.scale; i <= 360; i++) {
