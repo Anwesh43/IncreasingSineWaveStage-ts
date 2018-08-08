@@ -73,3 +73,85 @@ class Animator {
         }
     }
 }
+
+class ISWNode {
+    prev : ISWNode
+    next : ISWNode
+    state : State = new State()
+    constructor(private i : number) {
+        this.addNeighbor()
+    }
+
+    addNeighbor() {
+        if (this.i < nodes - 1) {
+            this.next = new ISWNode(this.i + 1)
+            this.next.prev = this
+        }
+    }
+
+    draw(context : CanvasRenderingContext2D) {
+        const gap : number = w / nodes
+        const a : number = h/3
+        context.strokeStyle = '#66BB6A'
+        context.lineCap = 'round'
+        context.lineWidth = Math.min(w, h) / 60
+        context.save()
+        context.translate(0, h/2)
+        var j = 0
+        context.beginPath()
+        for (var i = 360 * this.state.scale; i <= 360; i++) {
+            const x = (gap * i) / 360 , y = -a * Math.sin(i * Math.PI/180)
+            if (j == 0) {
+                context.moveTo(x, y)
+            } else {
+                context.lineTo(x, y)
+            }
+            j++
+        }
+        context.stroke()
+        context.restore()
+    }
+
+    update(cb : Function) {
+        this.state.update(cb)
+    }
+
+    startUpdating(cb : Function) {
+        this.state.startUpdating(cb)
+    }
+
+    getNext(dir : number, cb : Function) : ISWNode {
+        var curr : ISWNode = this.prev
+        if (dir == 1) {
+            curr = this.next
+        }
+        if (curr) {
+            return curr
+        }
+        cb()
+        return this
+    }
+}
+
+class LinkedISW {
+
+    curr : ISWNode = new ISWNode(0)
+    dir : number = 1
+
+    draw(context : CanvasRenderingContext2D) {
+        this.curr.draw(context)
+    }
+
+    update(cb : Function) {
+        this.curr.update(() => {
+            this.curr = this.curr.getNext(this.dir, () => {
+                this.dir *= -1
+            })
+            cb()
+        })
+    }
+
+    startUpdating(cb : Function) {
+        this.curr.startUpdating(cb)
+    }
+}
