@@ -29,6 +29,7 @@ class IncreasingSineWaveStage {
                     this.render()
                     this.linkedISW.update(() => {
                         this.animator.stop()
+                        this.render()
                     })
                 })
             })
@@ -48,11 +49,12 @@ class State {
     prevScale : number = 0
 
     update(stopcb : Function) {
-        this.scale += this.dir * 0.1
+        this.scale += this.dir * 0.05
         if (Math.abs(this.scale - this.prevScale) > 1) {
             this.scale = this.prevScale + this.dir
             this.dir = 0
             this.prevScale = this.scale
+            stopcb()
         }
     }
 
@@ -77,7 +79,7 @@ class Animator {
 
     stop() {
         if (this.animated) {
-            this.animated = true
+            this.animated = false
             clearInterval(this.interval)
         }
     }
@@ -97,7 +99,21 @@ class ISWNode {
             this.next.prev = this
         }
     }
-
+    drawSineWave(context, a, gap, factor) {
+      var j = 0
+      console.log(a * factor)
+      context.beginPath()
+      for (var i = 360 * this.state.scale; i <= 360; i++) {
+          const x = (gap * i) / 360 , y = (a * factor) * Math.sin(i * Math.PI/180)
+          if (j == 0) {
+              context.moveTo(x, y)
+          } else {
+              context.lineTo(x, y)
+          }
+          j++
+      }
+      context.stroke()
+    }
     draw(context : CanvasRenderingContext2D) {
         const gap : number = w / nodes
         const a : number = h/3
@@ -106,19 +122,15 @@ class ISWNode {
         context.lineWidth = Math.min(w, h) / 60
         context.save()
         context.translate(gap * this.i, h/2)
-        var j = 0
-        context.beginPath()
-        for (var i = 360 * this.state.scale; i <= 360; i++) {
-            const x = (gap * i) / 360 , y = -a * Math.sin(i * Math.PI/180)
-            if (j == 0) {
-                context.moveTo(x, y)
-            } else {
-                context.lineTo(x, y)
-            }
-            j++
+
+        for (var j = 0; j < 5; j++) {
+            this.drawSineWave(context, a, gap, (j + 1) / 5)
+            //console.log(1 - 2 *j)
         }
-        context.stroke()
         context.restore()
+        if (this.next) {
+            this.next.draw(context)
+        }
     }
 
     update(cb : Function) {
