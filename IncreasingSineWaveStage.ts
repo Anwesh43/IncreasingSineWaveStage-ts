@@ -3,7 +3,8 @@ const nodes : number = 5
 class IncreasingSineWaveStage {
     canvas : HTMLCanvasElement = document.createElement('canvas')
     context : CanvasRenderingContext2D
-
+    linkedISW : LinkedISW = new LinkedISW()
+    animator : Animator = new Animator()
     constructor() {
         this.initCanvas()
     }
@@ -22,7 +23,14 @@ class IncreasingSineWaveStage {
 
     handleTap() {
         this.canvas.onmousedown = () => {
-
+            this.linkedISW.startUpdating(() => {
+                this.animator.start(() => {
+                    this.render()
+                    this.linkedISW.update(() => {
+                        this.animator.stop()
+                    })
+                })
+            })
         }
     }
 
